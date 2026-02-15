@@ -54,7 +54,6 @@ git clone https://github.com/ApekshaGulhane/linkvault.git
 cd linkvault
 
 
-
 ### 2. Backend Setup
 
 cd backend npm install
