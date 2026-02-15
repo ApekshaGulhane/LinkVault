@@ -52,7 +52,8 @@ accessible.
 
 ### 1. Clone the Repository
 
-git clone `<your-repository-link>`{=html} cd linkvault
+git clone https://github.com/ApekshaGulhane/linkvault.git
+cd linkvault
 
 ------------------------------------------------------------------------
 
