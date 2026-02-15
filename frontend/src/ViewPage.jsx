@@ -1,9 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 function ViewPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/");
+  };
 
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
@@ -56,17 +63,27 @@ function ViewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 flex items-center justify-center text-white">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">
-      <div className="bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-lg text-center">
+    <div className="min-h-screen bg-gradient-to-br from-black via-purple-900 to-gray-900 flex items-center justify-center text-white">
+      <div className="backdrop-blur-lg bg-white/10 border border-white/20 p-8 rounded-3xl shadow-2xl w-full max-w-lg text-center transform hover:scale-105 transition duration-300">
 
         <h1 className="text-3xl font-bold mb-6">📄 Shared Content</h1>
+
+        {localStorage.getItem("token") && (
+          <button
+            onClick={handleLogout}
+           className="w-36 bg-gradient-to-r from-purple-600 to-pink-600 hover:scale-105 transition-transform duration-300 py-1 rounded-xl font-semibold shadow-lg"
+          >
+            Logout
+          </button>
+        )}
+
 
         {/* Password Required */}
         {requiresPassword && (
@@ -77,11 +94,11 @@ function ViewPage() {
               placeholder="Enter password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-lg bg-gray-700 text-white"
+              className="w-full p-4 rounded-xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
             />
             <button
               onClick={handlePasswordSubmit}
-              className="w-full bg-blue-600 hover:bg-blue-700 py-2 rounded-lg"
+             className="w-full mt-4 bg-purple-600 hover:bg-purple-700 transition-all duration-300 py-2 rounded-xl font-semibold shadow-lg hover:shadow-purple-500/50"        
             >
               Unlock
             </button>
@@ -95,12 +112,12 @@ function ViewPage() {
 
         {/* Content */}
         {data && !requiresPassword && (
-          <div className="space-y-4 text-left">
+          <div className="space-y-1 text-left">
 
             {data.text && (
               <div>
                 <p className="font-semibold">Text:</p>
-                <p className="bg-gray-700 p-3 rounded-lg mt-2">
+                <p className="w-full p-4 rounded-xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500 transition">
                   {data.text}
                 </p>
               </div>
@@ -111,7 +128,7 @@ function ViewPage() {
                 <p className="font-semibold">File:</p>
                 <a
                   href={`http://localhost:5001/download/${id}`}
-                  className="text-blue-400 underline"
+                  className="w-1000 p-1 rounded-xl bg-black/40 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
                 >
                   Download File
                 </a>
@@ -125,17 +142,33 @@ function ViewPage() {
 
           </div>
         )}
-        <button
-  onClick={async () => {
-    await axios.delete(`http://localhost:5001/delete/${id}`);
-    alert("Link deleted");
-    window.location.href = "/";
-  }}
-  className="mt-4 bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
->
-  Delete Link
-</button>
+        {localStorage.getItem("token") && (
+          <button
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem("token");
 
+                await axios.delete(
+                  `http://localhost:5001/delete/${id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`
+                    }
+                  }
+                );
+
+                alert("Link deleted successfully");
+                navigate("/upload");
+
+              } catch (error) {
+                alert("Delete failed");
+              }
+            }}
+            className="w-36 bg-gradient-to-r from-purple-500 to-pink-600 hover:scale-105 transition-transform duration-300 py-1 rounded-xl font-semibold shadow-lg"
+          >
+            Delete Link
+          </button>
+        )}
       </div>
     </div>
   );

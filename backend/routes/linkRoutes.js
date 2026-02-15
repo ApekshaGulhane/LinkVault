@@ -3,6 +3,8 @@ const router = express.Router();
 const { v4: uuidv4 } = require("uuid");
 const Link = require("../models/Link");
 const bcrypt = require("bcrypt");
+const authMiddleware = require("../middleware/authMiddleware");
+
 
 const multer = require("multer");
 
@@ -17,11 +19,14 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
   fileFilter: function (req, file, cb) {
     const allowedTypes = ["image/png", "image/jpeg", "application/pdf"];
+
     if (!allowedTypes.includes(file.mimetype)) {
-      cb(new Error("Only PNG, JPG, PDF allowed"));
+      cb(new Error("Only PNG, JPG and PDF files allowed"));
     } else {
       cb(null, true);
     }
@@ -30,7 +35,7 @@ const upload = multer({
 
 
 
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", authMiddleware, upload.single("file"), async (req, res) => {
   try {
     const { text, expiry, password, maxViews } = req.body;
 
@@ -59,12 +64,13 @@ router.post("/upload", upload.single("file"), async (req, res) => {
 
     const newLink = new Link({
       uniqueId,
+      user: req.user.userId,
       text: text || null,
       fileUrl: req.file ? req.file.path : null,
       expiresAt,
       password: hashedPassword,
-     maxViews: maxViews ? parseInt(maxViews) : null,
-viewCount: 0
+      maxViews: maxViews ? parseInt(maxViews) : null,
+      viewCount: 0
 
     });
 
@@ -76,9 +82,17 @@ viewCount: 0
     });
 
   } catch (error) {
-    console.log(error);
+    if (error.message.includes("File too large")) {
+      return res.status(400).json({ message: "File exceeds 5MB limit" });
+    }
+
+    if (error.message.includes("Only JPG")) {
+      return res.status(400).json({ message: error.message });
+    }
+
     res.status(500).json({ message: "Server Error" });
   }
+
 });
 
 
@@ -94,7 +108,7 @@ router.get("/download/:id", async (req, res) => {
     if (new Date() > link.expiresAt) {
       return res.status(410).json({ message: "Link expired" });
     }
-  
+
     const filePath = path.resolve(link.fileUrl);
     res.download(filePath);
 
@@ -103,20 +117,12 @@ router.get("/download/:id", async (req, res) => {
   }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", authMiddleware, async (req, res) => {
   try {
     const link = await Link.findOne({ uniqueId: req.params.id });
 
     if (!link) {
       return res.status(404).json({ message: "Link not found" });
-    }
-
-    // Delete file if exists
-    if (link.fileUrl) {
-      const fs = require("fs");
-      fs.unlink(link.fileUrl, (err) => {
-        if (err) console.log("File delete error:", err);
-      });
     }
 
     await Link.deleteOne({ uniqueId: req.params.id });
@@ -127,6 +133,7 @@ router.delete("/delete/:id", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 router.get("/:id", async (req, res) => {

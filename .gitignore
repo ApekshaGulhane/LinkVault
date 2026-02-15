@@ -1,5 +1,20 @@
+# Node modules
 node_modules/
+
+# Environment variables
 .env
-uploads/
+
+# Uploads
+backend/uploads/
+
+# Logs
+npm-debug.log*
+
+# Build folders
 dist/
+build/
+
+# OS files
+.DS_Store
+
 
