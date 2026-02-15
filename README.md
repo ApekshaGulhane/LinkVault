@@ -11,20 +11,18 @@ The main goal of this project was to build a simple but secure sharing
 platform that gives users control over how long their data remains
 accessible.
 
-------------------------------------------------------------------------
+
 
 ## Features Implemented
 
--   User Registration and Login\
--   JWT-based authentication and authorization\
--   Upload either text or a file\
--   Custom expiry time for links\
--   Optional password protection\
--   Optional maximum view limit\
--   Delete link functionality (only by authenticated user)\
+-   User Registration and Login
+-   JWT-based authentication and authorization
+-   Upload either text or a file
+-   Custom expiry time for links
+-   Optional password protection
+-   Optional maximum view limit
+-   Delete link functionality (only by authenticated user)
 -   Automatic deletion of expired links using a background job
-
-------------------------------------------------------------------------
 
 ## Tech Stack Used
 
@@ -46,7 +44,7 @@ accessible.
 -   Multer (for file upload handling)
 -   Node-Cron (for background cleanup job)
 
-------------------------------------------------------------------------
+
 
 ## Setup Instructions
 
@@ -55,7 +53,7 @@ accessible.
 git clone https://github.com/ApekshaGulhane/linkvault.git
 cd linkvault
 
-------------------------------------------------------------------------
+
 
 ### 2. Backend Setup
 
@@ -73,7 +71,7 @@ node server.js
 
 The backend will run on: http://localhost:5001
 
-------------------------------------------------------------------------
+
 
 ### 3. Frontend Setup
 
@@ -81,7 +79,7 @@ cd frontend npm install npm run dev
 
 Open the application at: http://localhost:5173
 
-------------------------------------------------------------------------
+
 
 ## API Overview
 
@@ -93,7 +91,7 @@ Registers a new user with email and password.
 POST /auth/login\
 Authenticates the user and returns a JWT token.
 
-------------------------------------------------------------------------
+
 
 ### Link Management
 
@@ -107,7 +105,6 @@ Fetches shared content using unique link ID.
 DELETE /delete/:id\
 Deletes a link. Only accessible to authenticated users.
 
-------------------------------------------------------------------------
 
 ## Database Schema
 
@@ -127,7 +124,7 @@ Deletes a link. Only accessible to authenticated users.
 -   viewCount (Number)
 -   maxViews (Optional Number)
 
-------------------------------------------------------------------------
+
 
 ## Design Decisions
 
@@ -139,7 +136,7 @@ Deletes a link. Only accessible to authenticated users.
 -   A background cron job runs periodically to remove expired data.
 -   Multer is used to safely handle file uploads.
 
-------------------------------------------------------------------------
+
 
 ## Assumptions
 
@@ -148,7 +145,6 @@ Deletes a link. Only accessible to authenticated users.
 -   Once expired, links cannot be recovered.
 -   No email verification process is implemented.
 
-------------------------------------------------------------------------
 
 ## Limitations
 
@@ -158,7 +154,6 @@ Deletes a link. Only accessible to authenticated users.
 -   Basic file validation only.
 -   UI can be further improved for production use.
 
-------------------------------------------------------------------------
 
 ## High-Level Data Flow
 
