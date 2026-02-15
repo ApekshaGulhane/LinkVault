@@ -1,155 +1,178 @@
-LinkVault is a full-stack web application that allows users to securely share text or files via unique links with customizable expiration times.
+# LinkVault -- Secure Temporary Sharing Application
 
----
+## Project Overview
 
-##  Features
+LinkVault is a secure web-based application that allows users to share
+text or files through temporary links. These links automatically expire
+after a selected time and can also be protected with a password or
+limited by maximum number of views.
 
-- Upload **text** or **file** (only one at a time)
-- Generate unique shareable link
-- Custom expiry time:
-  - 10 minutes
-  - 1 hour
-  - 1 day
-  - Custom minutes
-- Automatic expiry validation
-- Download file support
-- Copy-to-clipboard feature
-- Clean modern UI (Tailwind CSS)
+The main goal of this project was to build a simple but secure sharing
+platform that gives users control over how long their data remains
+accessible.
 
----
+------------------------------------------------------------------------
 
-## Tech Stack
+## Features Implemented
+
+-   User Registration and Login\
+-   JWT-based authentication and authorization\
+-   Upload either text or a file\
+-   Custom expiry time for links\
+-   Optional password protection\
+-   Optional maximum view limit\
+-   Delete link functionality (only by authenticated user)\
+-   Automatic deletion of expired links using a background job
+
+------------------------------------------------------------------------
+
+## Tech Stack Used
 
 ### Frontend
-- React (Vite)
-- Tailwind CSS
-- Axios
-- React Router
+
+-   React (with Vite)
+-   React Router
+-   Axios
+-   Tailwind CSS
 
 ### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- Multer (file upload)
-- UUID (unique link generation)
 
----
+-   Node.js
+-   Express.js
+-   MongoDB
+-   Mongoose
+-   JWT (JSON Web Token)
+-   Bcrypt (for password hashing)
+-   Multer (for file upload handling)
+-   Node-Cron (for background cleanup job)
 
-## Project Structure
+------------------------------------------------------------------------
 
-```
-linkvault/
-│
-├── backend/
-│   ├── models/
-│   ├── routes/
-│   ├── uploads/
-│   ├── server.js
-│   └── package.json
-│
-├── frontend/
-│   ├── src/
-│   ├── index.html
-│   ├── tailwind.config.js
-│   └── package.json
-│
-└── README.md
-```
+## Setup Instructions
 
+### 1. Clone the Repository
 
----
+git clone `<your-repository-link>`{=html} cd linkvault
 
-## How to Run the Project
+------------------------------------------------------------------------
 
-### 1 Backend Setup
+### 2. Backend Setup
 
-Go to backend folder:
+cd backend npm install
 
-cd backend
-npm install
+Create a .env file inside the backend folder and add:
 
+PORT=5001\
+MONGO_URI=your_mongodb_connection_string\
+JWT_SECRET=your_secret_key
 
-Create `.env` file:
+Start the backend server:
 
-PORT=5001
-MONGO_URI=mongodb://127.0.0.1:27017/linkvault
+node server.js
 
+The backend will run on: http://localhost:5001
 
-Start backend:
+------------------------------------------------------------------------
 
-npm run dev
+### 3. Frontend Setup
 
+cd frontend npm install npm run dev
 
-Server runs on:
-http://localhost:5001
+Open the application at: http://localhost:5173
 
+------------------------------------------------------------------------
 
----
+## API Overview
 
-### 2 Frontend Setup
+### Authentication
 
-Go to frontend folder:
+POST /auth/register\
+Registers a new user with email and password.
 
-cd frontend
-npm install
-npm run dev
+POST /auth/login\
+Authenticates the user and returns a JWT token.
 
+------------------------------------------------------------------------
 
-Frontend runs on:
-http://localhost:5173
+### Link Management
 
+POST /upload\
+Uploads text or file and generates a temporary link.\
+Requires authentication.
 
----
+GET /:id\
+Fetches shared content using unique link ID.
 
-## How It Works
+DELETE /delete/:id\
+Deletes a link. Only accessible to authenticated users.
 
-1. User uploads text or file.
-2. Backend generates unique UUID.
-3. Expiry time is stored in MongoDB.
-4. Frontend generates link using ID.
-5. When link is opened:
-   - If valid → content displayed.
-   - If expired → error shown.
-   - If file → download option available.
+------------------------------------------------------------------------
 
----
+## Database Schema
 
-##  Expiry Logic
+### User Model
 
-- Expiry time is calculated on upload.
-- On access, backend checks:
-if (new Date() > expiresAt)
+-   email (String)
+-   password (Hashed String)
 
-- If expired → 410 status returned.
+### Link Model
 
----
+-   uniqueId (String)
+-   text (Optional String)
+-   fileUrl (Optional String)
+-   expiresAt (Date)
+-   createdAt (Date)
+-   password (Optional Hashed String)
+-   viewCount (Number)
+-   maxViews (Optional Number)
 
-##  Validation Rules
+------------------------------------------------------------------------
 
-- Only text OR file allowed.
-- Both cannot be uploaded together.
-- Custom expiry must be greater than 0.
-- Expired links cannot be accessed.
+## Design Decisions
 
----
+-   JWT authentication is used to protect sensitive routes.
+-   Passwords are hashed using bcrypt before storing in database.
+-   Each link has an expiry timestamp to ensure temporary access.
+-   Optional password protection adds an extra layer of security.
+-   Max view count prevents unlimited sharing.
+-   A background cron job runs periodically to remove expired data.
+-   Multer is used to safely handle file uploads.
 
-##  UI Highlights
+------------------------------------------------------------------------
 
-- Dark modern theme
-- Centered card layout
-- Responsive design
-- Copy link button
-- File download button
+## Assumptions
 
----
+-   Users must log in before uploading or deleting content.
+-   Files are stored locally on the server.
+-   Once expired, links cannot be recovered.
+-   No email verification process is implemented.
 
-##  Future Improvements
+------------------------------------------------------------------------
 
-- Auto-delete expired links
-- Drag & drop file upload
-- Authentication system
-- Cloud file storage (AWS S3)
-- Deployment to cloud platform
+## Limitations
 
----
+-   No cloud storage integration.
+-   No admin dashboard.
+-   No refresh token system.
+-   Basic file validation only.
+-   UI can be further improved for production use.
+
+------------------------------------------------------------------------
+
+## High-Level Data Flow
+
+1.  User logs in or registers.
+2.  Frontend sends request to backend.
+3.  Backend verifies JWT using middleware.
+4.  Data is stored in MongoDB.
+5.  Unique link is generated and returned.
+6.  When link is accessed:
+    -   Expiry and view count are validated.
+    -   Content is returned if valid.
+7.  Cron job deletes expired entries automatically.
+
+------------------------------------------------------------------------
+
+## Important Note
+
+The node_modules folder is excluded using .gitignore.
